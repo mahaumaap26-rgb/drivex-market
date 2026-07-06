@@ -1,113 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 export default function ChatPage() {
-  const { id } = useParams();
-  const { data: session } = useSession();
+  const params = useParams();
+  const id = params.id as string;
 
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
 
-  // Load messages
-  useEffect(() => {
-  const fetchMessages = async () => {
-    const res = await fetch(`/api/messages?chatId=${id}`);
-    const data = await res.json();
-    setMessages(data);
-  };
+  const sendMessage = async () => {
+    if (!text.trim()) return;
 
-  // initial load
-  fetchMessages();
+    try {
+      const res = await fetch(`/api/chat/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
 
-  // 🔥 auto refresh every 2 seconds
-  const interval = setInterval(fetchMessages, 2000);
-
-  return () => clearInterval(interval);
-}, [id]);
-
-  // Send message
-const sendMessage = async () => {
-  try {
-    const res = await fetch(`/api/chat/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
-
-    if (res.ok) {
-      const newMsg = await res.json();
-      setMessages((prev) => [...prev, newMsg]);
-      setText("");
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-  if (res.ok) {
-    setText("");
-    // 🔥 IMPORTANT: do NOT manually update messages
-    // auto-refresh (useEffect polling) will load new messages
-  }
-};
-
-    const res = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chatId: id,
-        senderId: session?.user?.email,
-        text,
-      }),
-    });
-
-    if (res.ok) {
-      const newMsg = await res.json();
-      setMessages((prev) => [...prev, newMsg]);
-      setText("");
+      if (res.ok) {
+        const newMsg = await res.json();
+        setMessages((prev) => [...prev, newMsg]);
+        setText("");
+      }
+    } catch (err) {
+      console.error("Chat error:", err);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#050816] text-white flex flex-col">
-      
-      {/* HEADER */}
-      <div className="p-4 border-b border-white/10">
-        <h1 className="text-xl font-bold">Chat</h1>
-      </div>
+    <main className="min-h-screen bg-[#050816] text-white flex flex-col p-6">
+      <h1 className="text-xl font-bold mb-4">Chat</h1>
 
-      {/* MESSAGES */}
-      <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+      {/* Messages */}
+      <div className="flex-1 space-y-2 overflow-y-auto mb-4">
         {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`max-w-xs p-3 rounded-lg ${
-              msg.senderId === session?.user?.email
-                ? "bg-indigo-600 ml-auto"
-                : "bg-[#0d1323]"
-            }`}
-          >
-            {msg.text}
+          <div key={i} className="bg-white/10 p-2 rounded">
+            {msg.text || JSON.stringify(msg)}
           </div>
         ))}
       </div>
 
-      {/* INPUT */}
-      <div className="p-4 border-t border-white/10 flex gap-2">
+      {/* Input */}
+      <div className="flex gap-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-1 p-3 rounded bg-[#0d1323] border border-white/10"
+          placeholder="Type message..."
+          className="flex-1 p-2 rounded bg-black/40 border border-white/20"
         />
 
         <button
           onClick={sendMessage}
-          className="bg-indigo-600 px-6 rounded"
+          className="px-4 py-2 bg-indigo-600 rounded"
         >
           Send
         </button>
