@@ -29,19 +29,23 @@ export default function ChatPage() {
 }, [id]);
 
   // Send message
- const sendMessage = async () => {
-  const res = await fetch(`/api/chat/${id}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text }),
-  });
+const sendMessage = async () => {
+  try {
+    const res = await fetch(`/api/chat/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
 
-  if (res.ok) {
-    const newMsg = await res.json();
-    setMessages((prev) => [...prev, newMsg]);
-    setText("");
+    if (res.ok) {
+      const newMsg = await res.json();
+      setMessages((prev) => [...prev, newMsg]);
+      setText("");
+    }
+  } catch (error) {
+    console.error(error);
   }
 };
   if (res.ok) {
