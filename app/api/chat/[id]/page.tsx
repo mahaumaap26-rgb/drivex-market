@@ -29,9 +29,15 @@ export default function ChatPage() {
 }, [id]);
 
   // Send message
-  const sendMessage = async () => {
-  if (!text.trim()) return;
+ const sendMessage = async () => {
+  const res = await fetch(...);
 
+  if (res.ok) {
+    const newMsg = await res.json();
+    setMessages((prev) => [...prev, newMsg]);
+    setText("");
+  }
+};
   const res = await fetch("/api/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
