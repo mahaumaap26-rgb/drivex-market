@@ -7,7 +7,14 @@ export async function GET(
   context: any
 ) {
   try {
-    const { id } = context.params;
+    const id = context.params?.id;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing id" },
+        { status: 400 }
+      );
+    }
 
     const client = await clientPromise;
     const db = client.db("drivex");
@@ -17,11 +24,14 @@ export async function GET(
       .findOne({ _id: new ObjectId(id) });
 
     if (!vehicle) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(vehicle);
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
