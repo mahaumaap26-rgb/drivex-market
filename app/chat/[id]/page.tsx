@@ -30,7 +30,13 @@ export default function ChatPage() {
 
   // Send message
  const sendMessage = async () => {
-  const res = await fetch(...);
+  const res = await fetch(`/api/chat/${id}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text }),
+  });
 
   if (res.ok) {
     const newMsg = await res.json();
@@ -38,16 +44,6 @@ export default function ChatPage() {
     setText("");
   }
 };
-  const res = await fetch("/api/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chatId: id,
-      senderId: session?.user?.email,
-      text,
-    }),
-  });
-
   if (res.ok) {
     setText("");
     // 🔥 IMPORTANT: do NOT manually update messages
